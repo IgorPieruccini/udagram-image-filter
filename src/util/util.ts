@@ -39,7 +39,7 @@ interface isImageResponse {
   isSupportedFormat: boolean;
   encrypted: boolean;
 }
-const isImage = (url: string) => {
+const isImage = (url: string): isImageResponse => {
   const isSupported = supportedFormat.some((val) => url.includes(val));
   return {
     isSupportedFormat: isSupported,
