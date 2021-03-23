@@ -1,6 +1,10 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { filterImageFromURL, deleteLocalFiles } from "./util/util";
+import {
+  filterImageFromURL,
+  deleteLocalFiles,
+  getValidatedUrl,
+} from "./util/util";
 
 (async () => {
   const app = express();
@@ -10,12 +14,13 @@ import { filterImageFromURL, deleteLocalFiles } from "./util/util";
   app.use(bodyParser.json());
 
   app.get("/filteredimage", async (req, res) => {
-    const { image_url } = req.query;
     try {
+      const image_url = await getValidatedUrl(req);
+
       if (!image_url)
         throw "ERROR: image_url is missing, please add it to your request";
 
-      const filteredImage = await filterImageFromURL(image_url as string);
+      const filteredImage = await filterImageFromURL(image_url);
       const file = await filteredImage.img.getBufferAsync("image/jpeg");
       res.send(file);
       deleteLocalFiles([filteredImage.url]);

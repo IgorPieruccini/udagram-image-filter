@@ -1,3 +1,4 @@
+import { Request } from "express";
 import fs from "fs";
 import Jimp = require("jimp");
 
@@ -27,13 +28,56 @@ export async function filterImageFromURL(
   });
 }
 
-// deleteLocalFiles
-// helper function to delete files on the local disk
-// useful to cleanup after tasks
-// INPUTS
-//    files: Array<string> an array of absolute paths to files
 export async function deleteLocalFiles(files: Array<string>) {
   for (let file of files) {
     fs.unlinkSync(file);
   }
 }
+
+const supportedFormat = ["jpeg", "jpg", "png"];
+const isImage = (url: string) => {
+  return supportedFormat.some((val) => url.includes(val));
+};
+
+interface isValidUrlResponse {
+  isValid: boolean;
+  mountedUrl: string;
+}
+const isValidUrl = (
+  req: Request<Record<string, string>>
+): isValidUrlResponse => {
+  const keys = Object.keys(req.query);
+  const mountedUrl = keys.reduce((acc, cur, index) => {
+    if (index === 0) {
+      return `${req.query[cur]}`;
+    }
+    return `${acc}&${cur}=${req.query[cur]}`;
+  }, "");
+
+  return {
+    isValid: keys.length === 1,
+    mountedUrl,
+  };
+};
+
+export const getValidatedUrl = async (
+  req: Request<Record<string, string>>
+): Promise<string> => {
+  const { image_url } = req.query;
+
+  if (!image_url) {
+    throw "Missing parameter image_url";
+  }
+
+  const urlValidation = isValidUrl(req);
+  if (!urlValidation.isValid) {
+    throw `Invalid URL: ${urlValidation.mountedUrl}`;
+  }
+
+  console.log({ isImage });
+  if (!isImage(image_url as string)) {
+    throw "image format not supported";
+  }
+
+  return `${image_url}`;
+};
