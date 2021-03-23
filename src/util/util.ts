@@ -8,7 +8,7 @@ interface FilterImageFromURLResponse {
 export async function filterImageFromURL(
   inputURL: string
 ): Promise<FilterImageFromURLResponse> {
-  return new Promise(async (resolve) => {
+  return new Promise(async (resolve, reject) => {
     try {
       const photo = await Jimp.read(inputURL);
       const name = `filtered.${Math.floor(Math.random() * 2000)}.jpg`;
@@ -17,11 +17,12 @@ export async function filterImageFromURL(
         .resize(256, 256)
         .quality(60)
         .greyscale()
-        .write(__dirname + outpath, (_, img: Jimp) => {
+        .write(__dirname + outpath, (error, img: Jimp) => {
+          if (error) reject(error);
           resolve({ url: __dirname + outpath, img });
         });
-    } catch (e) {
-      throw e;
+    } catch (error) {
+      reject(error);
     }
   });
 }
