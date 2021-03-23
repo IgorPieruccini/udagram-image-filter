@@ -34,9 +34,17 @@ export async function deleteLocalFiles(files: Array<string>) {
   }
 }
 
-const supportedFormat = ["jpeg", "jpg", "png"];
+const supportedFormat = ["jpeg", "jpg", "png", "/images"];
+interface isImageResponse {
+  isSupportedFormat: boolean;
+  encrypted: boolean;
+}
 const isImage = (url: string) => {
-  return supportedFormat.some((val) => url.includes(val));
+  const isSupported = supportedFormat.some((val) => url.includes(val));
+  return {
+    isSupportedFormat: isSupported,
+    encrypted: url.includes("/images"),
+  };
 };
 
 interface isValidUrlResponse {
@@ -69,14 +77,16 @@ export const getValidatedUrl = async (
     throw "Missing parameter image_url";
   }
 
-  const urlValidation = isValidUrl(req);
-  if (!urlValidation.isValid) {
-    throw `Invalid URL: ${urlValidation.mountedUrl}`;
+  const isSupportedImage = isImage(image_url as string);
+  if (!isSupportedImage.isSupportedFormat) {
+    throw "image format not supported";
   }
 
-  console.log({ isImage });
-  if (!isImage(image_url as string)) {
-    throw "image format not supported";
+  if (!isSupportedImage.encrypted) {
+    const urlValidation = isValidUrl(req);
+    if (!urlValidation.isValid) {
+      throw `Invalid URL: ${urlValidation.mountedUrl}`;
+    }
   }
 
   return `${image_url}`;
