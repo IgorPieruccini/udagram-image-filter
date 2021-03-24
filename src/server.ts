@@ -16,14 +16,11 @@ import {
   app.get("/filteredimage", async (req, res) => {
     try {
       const image_url = await getValidatedUrl(req);
-
-      if (!image_url)
-        throw "ERROR: image_url is missing, please add it to your request";
-
       const filteredImage = await filterImageFromURL(image_url);
-      const file = await filteredImage.img.getBufferAsync("image/jpeg");
-      res.send(file);
-      deleteLocalFiles([filteredImage.url]);
+      res.download(filteredImage, (err) => {
+        deleteLocalFiles([filteredImage]);
+        if (err) throw err;
+      });
     } catch (errMessage) {
       res.status(400);
       res.send(errMessage);

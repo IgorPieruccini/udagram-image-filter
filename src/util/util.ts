@@ -2,13 +2,7 @@ import { Request } from "express";
 import fs from "fs";
 import Jimp = require("jimp");
 
-interface FilterImageFromURLResponse {
-  url: string;
-  img: Jimp;
-}
-export async function filterImageFromURL(
-  inputURL: string
-): Promise<FilterImageFromURLResponse> {
+export async function filterImageFromURL(inputURL: string): Promise<string> {
   return new Promise(async (resolve, reject) => {
     try {
       const photo = await Jimp.read(inputURL);
@@ -18,9 +12,9 @@ export async function filterImageFromURL(
         .resize(256, 256)
         .quality(60)
         .greyscale()
-        .write(__dirname + outpath, (error, img: Jimp) => {
+        .write(__dirname + outpath, (error) => {
           if (error) reject(error);
-          resolve({ url: __dirname + outpath, img });
+          resolve(__dirname + outpath);
         });
     } catch (error) {
       reject(error);
