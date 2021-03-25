@@ -13,21 +13,24 @@ import {
 
   app.use(bodyParser.json());
 
-  app.get("/filteredimage", async (req, res) => {
-    try {
-      const image_url = await getValidatedUrl(req);
-      const filteredImage = await filterImageFromURL(image_url);
-      res.download(filteredImage, (err) => {
-        deleteLocalFiles([filteredImage]);
-        if (err) throw err;
-      });
-    } catch (errMessage) {
-      res.status(400);
-      res.send(errMessage);
+  app.get(
+    "/filteredimage",
+    async (req: express.Request, res: express.Response) => {
+      try {
+        const image_url = await getValidatedUrl(req);
+        const filteredImage = await filterImageFromURL(image_url);
+        res.download(filteredImage, (err) => {
+          deleteLocalFiles([filteredImage]);
+          if (err) throw err;
+        });
+      } catch (errMessage) {
+        res.status(400);
+        res.send(errMessage);
+      }
     }
-  });
+  );
 
-  app.get("/", async (_, res) => {
+  app.get("/", async (_, res: express.Response) => {
     res.send("try GET /filteredimage?image_url={{}}");
   });
 
